@@ -22,12 +22,10 @@ public class MealsUtil {
             new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 13, 0), "Обед", 500),
             new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410)
     );
-    private static final int caloriesPerDay = 2000;
+    public static final int CALORIESPERDAY = 2000;
+
     public static List<Meal> getMeals() {
         return meals;
-    }
-    public static int getCaloriesPerDay() {
-        return caloriesPerDay;
     }
 
     public static void main(String[] args) {
@@ -50,16 +48,5 @@ public class MealsUtil {
 
     private static MealTo createTo(Meal meal, boolean excess) {
         return new MealTo(meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
-    }
-
-    public static List<MealTo> toMealsWithEx(List<Meal> meals, int caloriesPerDay) {
-        Map<LocalDate, Integer> caloriesSumByDate = meals.stream()
-                .collect(
-                        Collectors.groupingBy(Meal::getDate, Collectors.summingInt(Meal::getCalories))
-                );
-
-        return meals.stream()
-                .map(meal -> createTo(meal, caloriesSumByDate.get(meal.getDate()) > caloriesPerDay))
-                .collect(Collectors.toList());
     }
 }

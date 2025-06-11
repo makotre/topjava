@@ -16,18 +16,13 @@
         <td><b>Калории</b></td>
     </tr>
     <c:forEach items="${meals}" var="meal" varStatus="status">
-        <c:set var = "text_color" value = "green"/>
-        <c:if test = "${meal.isExcess()}">
-            <c:set var = "text_color" value = "red"/>
-        </c:if>
-        <tr style="background-color: ${status.index % 2 == 0 ? '#f2f2f2' : '#ffffff'};">
+        <c:set var="text_color" value="${meal.excess ? 'red' : 'green'}" />
+        <tr style="background-color: ${status.index % 2 == 0 ? '#f2f2f2' : '#ffffff'}; color: ${text_color};">
             <br>
-            <c:set var="formattedDate" value="${fn:replace(meal.getDateTime().toString(), 'T', ' ')}" />
-            <td><font color="${text_color}">
-                   ${formattedDate}
-                </font></td>
-            <td><font color="${text_color}">${meal.getDescription()}</font></td>
-            <td><font color="${text_color}">${meal.getCalories()}</font></td>
+            <c:set var="formattedDate" value="${fn:replace(meal.dateTime.toString(), 'T', ' ')}" />
+            <td>${formattedDate}</td>
+            <td>${meal.description}</td>
+            <td>${meal.calories}</td>
         </tr>
     </c:forEach>
 </table>
