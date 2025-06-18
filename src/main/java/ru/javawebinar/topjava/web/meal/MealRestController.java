@@ -12,7 +12,6 @@ import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Collection;
 import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
@@ -25,36 +24,39 @@ public class MealRestController {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    public Collection<MealTo> getAll() {
+    public int userId = SecurityUtil.authUserId();
+
+    public List<MealTo> getAll() {
         log.info("getAll");
-        return MealsUtil.getFilteredTos(service.getAll(), SecurityUtil.authUserCaloriesPerDay(),
+        return MealsUtil.getFilteredTos(service.getAll(userId), SecurityUtil.authUserCaloriesPerDay(),
                 LocalTime.MIN, LocalTime.MAX);
     }
 
     public Meal create(Meal meal) {
         log.info("create {}", meal);
         checkIsNew(meal);
-        return service.create(meal);
+        return service.create(meal, userId);
     }
 
     public Meal get(int id) {
         log.info("get {}", id);
-        return service.get(id);
+        return service.get(id, userId);
     }
 
     public void update(Meal meal, int id) {
         log.info("update {} with id={}", meal, id);
         assureIdConsistent(meal, id);
-        service.update(meal);
+        service.update(meal, userId);
     }
 
     public void delete(int id) {
         log.info("delete {}", id);
-        service.delete(id);
+        service.delete(id, userId);
     }
 
     public List<MealTo> getBetween(LocalDateTime startDate, LocalTime startTime, LocalDateTime endDate, LocalTime endTime) {
-        log.info("getBetween start - {} {}, end - {} {}", startDate, startTime, endDate, endTime);
-        return service.getBetween(startDate, startTime, endDate, endTime);
+        log.info("getBetween days - {} {}, time - {} {}", startDate, endDate, startTime, endTime);
+        return MealsUtil.getFilteredTos(service.getBetween(startDate, endDate, userId),
+                SecurityUtil.authUserCaloriesPerDay(), startTime, endTime);
     }
 }
