@@ -8,8 +8,6 @@ import static ru.javawebinar.topjava.util.MealsUtil.DEFAULT_CALORIES_PER_DAY;
 
 public class User extends AbstractNamedEntity {
 
-    private String email;
-
     private String password;
 
     private boolean enabled;
@@ -25,20 +23,11 @@ public class User extends AbstractNamedEntity {
     }
 
     public User(Integer id, String name, String email, String password, int caloriesPerDay, boolean enabled, Collection<Role> roles) {
-        super(id, name);
-        this.email = email;
+        super(id, name, email);
         this.password = password;
         this.caloriesPerDay = caloriesPerDay;
         this.enabled = enabled;
         setRoles(roles);
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public void setPassword(String password) {
