@@ -19,7 +19,9 @@ import java.time.LocalTime;
                 query = "SELECT m FROM Meal m WHERE m.user.id =: userId ORDER BY m.dateTime DESC")
 })
 @Entity
-@Table(name = "meal")
+@Table(name = "meal",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "date_time"}, name ="meal_unique_user_datetime_idx")
+)
 public class Meal extends AbstractBaseEntity {
 
     public static final String BETWEEN_DATES = "Meal.getBetweenHalfOpen";
