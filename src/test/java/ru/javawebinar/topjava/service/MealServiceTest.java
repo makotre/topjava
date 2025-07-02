@@ -1,10 +1,14 @@
 package ru.javawebinar.topjava.service;
 
 import org.junit.*;
+import org.junit.rules.Stopwatch;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -16,6 +20,9 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -30,40 +37,77 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
 
-    private static String watchedLog = "\n----------------------\n";
+    private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
+    private static final List<String> res = new ArrayList<>();
+
+    private static void logInfo(Description description, String status, long nanos) {
+        String testName = description.getMethodName();
+        log.info(String.format("Test %s %s, spent %d microseconds",
+                testName, status, TimeUnit.NANOSECONDS.toMicros(nanos)));
+    }
 
     @Rule
-    public final TestRule watchman = new TestWatcher() {
-        private long startTime;
+    public Stopwatch stopwatch = new Stopwatch() {
 
         @Override
-        protected void succeeded(Description description) {
-            watchedLog += description.getMethodName() + " succeeded" +
-                    " in " + (System.currentTimeMillis() - startTime) + "ms\n";
-        }
-
-        @Override
-        protected void failed(Throwable e, Description description) {
-            watchedLog += e.getClass().getSimpleName() + " " + description.getMethodName() + " failed" +
-                    " in " + (System.currentTimeMillis() - startTime) + "ms\n";
-        }
-
-        @Override
-        protected void skipped(AssumptionViolatedException e, Description description) {
-            watchedLog += e.getClass().getSimpleName() + description.getMethodName() + " skipped" +
-                    " in " + (System.currentTimeMillis() - startTime) + "ms\n";
-        }
-
-        @Override
-        protected void starting(Description description) {
-            startTime = System.currentTimeMillis();
+        protected void finished(long nanos, Description description) {
+            logInfo(description, "finished", nanos);
+            String result = String.format("%s: %d microseconds",
+                    description.getMethodName(), TimeUnit.NANOSECONDS.toMicros(nanos));
+            res.add(result);
         }
     };
 
     @AfterClass
     public static void print() {
-        System.out.println(watchedLog + "\n----------------------");
+        log.info("\n----------------------");
+        for(String str : res) {
+            log.info(str);
+        }
+        log.info("\n----------------------");
     }
+
+
+//    private static String watchedLog = "\n----------------------\n";
+//
+//    @Rule
+//    public final Stopwatch watchman = new TestRule() {
+//        @Override
+//        public Statement apply(Statement statement, Description description) {
+//            return null;
+//        }
+//
+//        private long startTime;
+//
+//        @Override
+//        protected void succeeded(Description description) {
+//            watchedLog += description.getMethodName() + " succeeded" +
+//                    " in " + (System.nanoTime() - startTime) + "ms\n";
+//        }
+//
+//        @Override
+//        protected void failed(Throwable e, Description description) {
+//            watchedLog += e.getClass().getSimpleName() + " " + description.getMethodName() + " failed" +
+//                    " in " + (System.nanoTime() - startTime) + "ms\n";
+//        }
+//
+//        @Override
+//        protected void skipped(AssumptionViolatedException e, Description description) {
+//            watchedLog += e.getClass().getSimpleName() + description.getMethodName() + " skipped" +
+//                    " in " + (System.nanoTime() - startTime) + "ms\n";
+//        }
+//
+//        @Override
+//        protected void starting(Description description) {
+//            startTime = System.nanoTime();
+//        }
+//
+//        @Override
+//        protected void finished(Description description) {
+//            watchedLog += description.getMethodName() + " in " + (System.nanoTime() - startTime) + "ms\n";
+//        }
+//    };
+//
 
     @Autowired
     private MealService service;
