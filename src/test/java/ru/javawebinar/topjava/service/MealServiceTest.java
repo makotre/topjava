@@ -2,11 +2,8 @@ package ru.javawebinar.topjava.service;
 
 import org.junit.*;
 import org.junit.rules.Stopwatch;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,48 +63,6 @@ public class MealServiceTest {
         }
         log.info("\n----------------------");
     }
-
-
-//    private static String watchedLog = "\n----------------------\n";
-//
-//    @Rule
-//    public final Stopwatch watchman = new TestRule() {
-//        @Override
-//        public Statement apply(Statement statement, Description description) {
-//            return null;
-//        }
-//
-//        private long startTime;
-//
-//        @Override
-//        protected void succeeded(Description description) {
-//            watchedLog += description.getMethodName() + " succeeded" +
-//                    " in " + (System.nanoTime() - startTime) + "ms\n";
-//        }
-//
-//        @Override
-//        protected void failed(Throwable e, Description description) {
-//            watchedLog += e.getClass().getSimpleName() + " " + description.getMethodName() + " failed" +
-//                    " in " + (System.nanoTime() - startTime) + "ms\n";
-//        }
-//
-//        @Override
-//        protected void skipped(AssumptionViolatedException e, Description description) {
-//            watchedLog += e.getClass().getSimpleName() + description.getMethodName() + " skipped" +
-//                    " in " + (System.nanoTime() - startTime) + "ms\n";
-//        }
-//
-//        @Override
-//        protected void starting(Description description) {
-//            startTime = System.nanoTime();
-//        }
-//
-//        @Override
-//        protected void finished(Description description) {
-//            watchedLog += description.getMethodName() + " in " + (System.nanoTime() - startTime) + "ms\n";
-//        }
-//    };
-//
 
     @Autowired
     private MealService service;
