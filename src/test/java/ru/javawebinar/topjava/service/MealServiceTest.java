@@ -17,8 +17,6 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertThrows;
@@ -35,33 +33,26 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 public class MealServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
-    private static final List<String> res = new ArrayList<>();
+    private static String res_str = "\n----------------------\n";
 
     private static void logInfo(Description description, String status, long nanos) {
         String testName = description.getMethodName();
-        log.info(String.format("Test %s %s, spent %d microseconds",
-                testName, status, TimeUnit.NANOSECONDS.toMicros(nanos)));
+        log.info("Test {} {}, spent {} ms", testName, status, TimeUnit.NANOSECONDS.toMillis(nanos));
     }
 
     @Rule
     public Stopwatch stopwatch = new Stopwatch() {
-
         @Override
         protected void finished(long nanos, Description description) {
             logInfo(description, "finished", nanos);
-            String result = String.format("%s: %d microseconds",
-                    description.getMethodName(), TimeUnit.NANOSECONDS.toMicros(nanos));
-            res.add(result);
+            res_str += String.format("%-30s %4d ms\n",
+                    description.getMethodName(), TimeUnit.NANOSECONDS.toMillis(nanos));
         }
     };
 
     @AfterClass
     public static void print() {
-        log.info("\n----------------------");
-        for(String str : res) {
-            log.info(str);
-        }
-        log.info("\n----------------------");
+        log.info(res_str + "----------------------");
     }
 
     @Autowired
