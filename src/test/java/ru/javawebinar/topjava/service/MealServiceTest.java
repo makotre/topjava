@@ -33,26 +33,22 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 public class MealServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
-    private static String res_str = "\n----------------------\n";
-
-    private static void logInfo(Description description, String status, long nanos) {
-        String testName = description.getMethodName();
-        log.info("Test {} {}, spent {} ms", testName, status, TimeUnit.NANOSECONDS.toMillis(nanos));
-    }
+    private static String res = "\n----------------------\n";
 
     @Rule
     public Stopwatch stopwatch = new Stopwatch() {
         @Override
         protected void finished(long nanos, Description description) {
-            logInfo(description, "finished", nanos);
-            res_str += String.format("%-30s %4d ms\n",
-                    description.getMethodName(), TimeUnit.NANOSECONDS.toMillis(nanos));
+            String testName = description.getMethodName();
+            long time = TimeUnit.NANOSECONDS.toMillis(nanos);
+            log.info("Test {} finished, spent {} ms", testName, time);
+            res += String.format("%-30s %4d ms\n", description.getMethodName(), time);
         }
     };
 
     @AfterClass
     public static void print() {
-        log.info(res_str + "----------------------");
+        log.info(res + "----------------------");
     }
 
     @Autowired

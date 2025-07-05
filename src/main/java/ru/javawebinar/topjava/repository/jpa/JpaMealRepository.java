@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
+@Transactional(readOnly = true)
 public class JpaMealRepository implements MealRepository {
 
     @PersistenceContext
@@ -40,7 +41,6 @@ public class JpaMealRepository implements MealRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Meal get(int id, int userId) {
         Meal meal = em.find(Meal.class, id);
         return (meal != null && meal.getUser().getId() == userId)
@@ -49,14 +49,12 @@ public class JpaMealRepository implements MealRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Meal> getAll(int userId) {
         return em.createNamedQuery(Meal.ALL_USERS_MEAL, Meal.class)
                 .setParameter("userId", userId).getResultList();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
         return em.createNamedQuery(Meal.BETWEEN_DATES, Meal.class)
                 .setParameter("userId", userId)
