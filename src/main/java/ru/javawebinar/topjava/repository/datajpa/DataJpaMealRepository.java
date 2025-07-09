@@ -3,7 +3,6 @@ package ru.javawebinar.topjava.repository.datajpa;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.MealRepository;
 
 import java.time.LocalDateTime;
@@ -23,8 +22,7 @@ public class DataJpaMealRepository implements MealRepository {
 
     @Override
     public Meal save(Meal meal, int userId) {
-        User user = crudUserRepository.findById(userId).get();
-        meal.setUser(user);
+        meal.setUser(crudUserRepository.getReferenceById(userId));
         return !meal.isNew() && get(meal.id(), userId) == null ? null : crudMealRepository.save(meal);
     }
 
@@ -41,10 +39,7 @@ public class DataJpaMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getAll(int userId) {
-        return crudMealRepository.findAll(SORT_DATE_TIME).stream()
-                .filter(meal -> meal.getUser().getId() == userId)
-                .toList();
-        //SELECT m FROM Meal m WHERE m.user.id=:userId ORDER BY m.dateTime DESC
+        return crudMealRepository.getAll(userId);
     }
 
     @Override
