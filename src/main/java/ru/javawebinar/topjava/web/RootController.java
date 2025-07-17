@@ -39,3 +39,17 @@ public class RootController {
         return "redirect:meals";
     }
 }
+
+//<spring:message code="app.title"/>
+//<spring:message code="${param.action == 'create' ? 'meal.create' : 'meal.edit'}"/>
+//<h3><a href="${pageContext.request.contextPath}"><spring:message code="app.home"/></a></h3>
+//
+//<a href="meals"><spring:message code="app.title"/></a>
+//
+//        <form method="post" action="users">
+//        <spring:message code="app.login"/>: <select name="userId">
+//        <option value="100000" selected>User</option>
+//        <option value="100001">Admin</option>
+//    </select>
+//        <button type="submit"><spring:message code="common.select"/></button>
+//        </form>
