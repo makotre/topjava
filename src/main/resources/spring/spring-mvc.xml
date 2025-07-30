@@ -49,4 +49,20 @@
         <property name="basenames" value="file:///#{systemEnvironment[TOPJAVA_ROOT]}/config/messages/app"/>
         <property name="fallbackToSystemLocale" value="false"/>
     </bean>
+
+
+    <bean id="stringToLocalTimeConverter" class="ru.javawebinar.topjava.web.converter.StringToLocalTimeConverter"/>
+    <bean id="stringToLocalDateConverter" class="ru.javawebinar.topjava.web.converter.StringToLocalDateConverter"/>
+
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <ref bean="stringToLocalDateConverter"/>
+                <ref bean="stringToLocalTimeConverter"/>
+            </set>
+        </property>
+    </bean>
+
+    <mvc:annotation-driven conversion-service="conversionService"/>
+
 </beans>

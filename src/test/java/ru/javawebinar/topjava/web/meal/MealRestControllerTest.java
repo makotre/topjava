@@ -11,6 +11,8 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -77,11 +79,13 @@ public class MealRestControllerTest extends AbstractControllerTest {
     @Test
     void getBetween() throws Exception {
         perform(MockMvcRequestBuilders.get(REST_URL + "/filter")
-                .param("startDate", "2020-01-30T00:00:00")
-                .param("startTime", "2020-01-30T07:00:00")
-                .param("endDate", "2020-01-30T00:00:00")
-                .param("endTime", "2020-01-30T11:00:00"))
+                .param("startDate", "2020-01-30")
+                .param("startTime", "07:00")
+                .param("endDate", "2020-01-30")
+                .param("endTime", "11:00"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(MEAL_TO_MATCHER.contentJson(List.of(mealTo1))); //без List.of ломается с ошибкой
+        // Caused by: com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot deserialize value of type `ru.javawebinar.topjava.to.MealTo` from Array value (token `JsonToken.START_ARRAY`)
     }
 }
