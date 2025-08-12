@@ -5,25 +5,33 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
+import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
+
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.MealTestData.*;
+import static ru.javawebinar.topjava.UserTestData.USER_EMAIL;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
 import static ru.javawebinar.topjava.UserTestData.user;
 import static ru.javawebinar.topjava.util.MealsUtil.createTo;
 import static ru.javawebinar.topjava.util.MealsUtil.getTos;
 
 @Disabled
+@WithUserDetails(value = USER_EMAIL)
 class MealRestControllerTest extends AbstractControllerTest {
 
     private static final String REST_URL = MealRestController.REST_URL + '/';
@@ -49,12 +57,14 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void update() throws Exception {
-        Meal updated = getUpdated();
+        MealTo updatedTo = new MealTo(null, LocalDateTime.of(2025, 8, 12, 13, 0),
+                "newMeal", 500, false);
         perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID).contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.writeValue(updated)))
+                .content(JsonUtil.writeValue(updatedTo)))
                 .andExpect(status().isNoContent());
 
-        MEAL_MATCHER.assertMatch(mealService.get(MEAL1_ID, USER_ID), updated);
+        MEAL_MATCHER.assertMatch(mealService.get(MEAL1_ID, USER_ID), MealsUtil.updateFromTo(
+                new Meal(meal1.id(), meal1.getDateTime(), meal1.getDescription(), meal1.getCalories()), updatedTo));
     }
 
     @Test
@@ -96,5 +106,12 @@ class MealRestControllerTest extends AbstractControllerTest {
         perform(MockMvcRequestBuilders.get(REST_URL + "filter?startDate=&endTime="))
                 .andExpect(status().isOk())
                 .andExpect(TO_MATCHER.contentJson(getTos(meals, user.getCaloriesPerDay())));
+    }
+
+    @Test
+    @WithAnonymousUser
+    void getAllWithUnAuth() throws Exception {
+        perform(MockMvcRequestBuilders.get(REST_URL))
+                .andExpect(status().isUnauthorized());
     }
 }
