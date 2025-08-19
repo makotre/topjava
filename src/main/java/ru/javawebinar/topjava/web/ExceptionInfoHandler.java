@@ -9,6 +9,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -43,12 +44,11 @@ public class ExceptionInfoHandler {
     @ResponseStatus(HttpStatus.CONFLICT)  // 409
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
-        Throwable rootCause = ValidationUtil.getRootCause(e);
-        String rootMsg = rootCause.getMessage();
+        String rootMsg = ValidationUtil.getRootCause(e).getMessage();
         if (rootMsg != null) {
             if (rootMsg.toLowerCase().contains("users_unique_email_idx")) {
-                log.error(VALIDATION_ERROR + " at request " + req.getRequestURL(), ValidationUtil.getRootCause(e));
-                return new ErrorInfo(req.getRequestURL(), VALIDATION_ERROR, messageSourceAccessor.getMessage("error.emailDuplicate"));
+                logAndGetErrorInfoWithMsg(req, e, true, VALIDATION_ERROR,
+                        messageSourceAccessor.getMessage("error.emailDuplicate"));
             }
         }
         return logAndGetErrorInfo(req, e, true, DATA_ERROR);
@@ -67,19 +67,34 @@ public class ExceptionInfoHandler {
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ErrorInfo handleMethodArgumentNotValidException(HttpServletRequest req, MethodArgumentNotValidException e) {
+    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
+    public ErrorInfo handleMethodArgumentNotValidException(HttpServletRequest req, Exception e) {
         return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
     }
 
     //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
     private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType) {
         Throwable rootCause = ValidationUtil.getRootCause(e);
+        logEx(req, logException, errorType, rootCause);
+        if (e instanceof BindException bindEx) {
+            return new ErrorInfo(req.getRequestURL(), errorType, ValidationUtil.getErrorResponse(bindEx.getBindingResult()));
+        } else if (e instanceof MethodArgumentNotValidException manve) {
+            return new ErrorInfo(req.getRequestURL(), errorType, ValidationUtil.getErrorResponse(manve.getBindingResult()));
+        }
+        return new ErrorInfo(req.getRequestURL(), errorType, rootCause.getMessage());
+    }
+
+    private static ErrorInfo logAndGetErrorInfoWithMsg(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType, String msg) {
+        Throwable rootCause = ValidationUtil.getRootCause(e);
+        logEx(req, logException, errorType, rootCause);
+        return new ErrorInfo(req.getRequestURL(), errorType, msg);
+    }
+
+    private static void logEx(HttpServletRequest req, boolean logException, ErrorType errorType, Throwable rootCause) {
         if (logException) {
             log.error(errorType + " at request " + req.getRequestURL(), rootCause);
         } else {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
-        return new ErrorInfo(req.getRequestURL(), errorType, rootCause.getMessage());
     }
 }
